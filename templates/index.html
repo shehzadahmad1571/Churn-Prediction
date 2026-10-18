@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Estimate customer churn from telecom account details.">
+    <title>Customer Churn Prediction</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <main class="page-shell">
+      <header class="hero">
+        <p class="eyebrow">CUSTOMER RETENTION TOOL</p>
+        <h1>Churn prediction</h1>
+        <p class="intro">Enter a customer's current account and service details to estimate their churn risk.</p>
+      </header>
+
+      {% if result %}
+      <section class="result-card {{ 'risk' if result.is_churn else 'safe' }}" aria-live="polite">
+        <p class="eyebrow">PREDICTION</p>
+        <h2>{{ result.label }}</h2>
+        <p>Estimated churn probability: <strong>{{ "%.1f"|format(result.probability * 100) }}%</strong></p>
+        <p class="result-note">Decision threshold: {{ "%.2f"|format(result.threshold) }}. This is a model estimate, not a guarantee.</p>
+      </section>
+      {% endif %}
+
+      <section class="form-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">CUSTOMER PROFILE</p>
+            <h2>Account details</h2>
+          </div>
+          <p class="required-note">All fields are required</p>
+        </div>
+
+        {% if form_error %}
+        <div class="form-alert" role="alert">{{ form_error }}</div>
+        {% endif %}
+
+        <form action="{{ url_for('predict') }}" method="post">
+          <div class="field-grid">
+            {% for field in fields %}
+            <div class="field {{ 'has-error' if field.name in errors else '' }}">
+              <label for="{{ field.name }}">{{ field.label }}</label>
+              {% if field.kind == "select" %}
+              <select id="{{ field.name }}" name="{{ field.name }}" required aria-describedby="{{ field.name }}-error">
+                <option value="" disabled {% if not values.get(field.name) %}selected{% endif %}>Choose an option</option>
+                {% for value, label in field.choices %}
+                <option value="{{ value }}" {% if values.get(field.name) == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+              </select>
+              {% else %}
+              <input
+                id="{{ field.name }}"
+                name="{{ field.name }}"
+                type="number"
+                min="{{ field.minimum }}"
+                max="{{ field.maximum }}"
+                step="{{ field.step }}"
+                value="{{ values.get(field.name, '') }}"
+                required
+                aria-describedby="{{ field.name }}-error"
+              >
+              {% endif %}
+              <span class="field-error" id="{{ field.name }}-error">{{ errors.get(field.name, '') }}</span>
+            </div>
+            {% endfor %}
+          </div>
+          <button type="submit">Estimate churn risk</button>
+        </form>
+      </section>
+
+      <footer>
+        Predictions use the trained Assignment 1 model and its saved preprocessing pipeline.
+      </footer>
+    </main>
+  </body>
+</html>
