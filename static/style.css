@@ -26,14 +26,6 @@ body {
   margin-bottom: 28px;
 }
 
-.eyebrow {
-  margin: 0 0 8px;
-  color: #52647f;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-}
-
 h1,
 h2,
 p {
@@ -66,10 +58,6 @@ h1 {
 }
 
 .section-heading {
-  display: flex;
-  align-items: end;
-  justify-content: space-between;
-  gap: 16px;
   margin-bottom: 24px;
 }
 
@@ -79,10 +67,9 @@ h1 {
   font-size: 1.45rem;
 }
 
-.required-note {
-  margin-bottom: 3px;
-  color: #6a778c;
-  font-size: 0.85rem;
+.required-indicator {
+  color: #c43c43;
+  font-weight: 800;
 }
 
 .field-grid {
@@ -188,13 +175,6 @@ button:active {
   font-size: 0.86rem;
 }
 
-footer {
-  padding: 22px 4px 0;
-  color: #68768b;
-  font-size: 0.82rem;
-  line-height: 1.5;
-}
-
 @media (max-width: 620px) {
   .page-shell {
     padding-top: 34px;
@@ -203,11 +183,5 @@ footer {
   .field-grid {
     grid-template-columns: 1fr;
     gap: 12px;
-  }
-
-  .section-heading {
-    align-items: start;
-    flex-direction: column;
-    gap: 8px;
   }
 }
