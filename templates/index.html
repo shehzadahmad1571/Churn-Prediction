@@ -10,61 +10,98 @@
   <body>
     <main class="page-shell">
       <header class="hero">
-        <h1>Churn prediction</h1>
-        <p class="intro">Enter a customer's current account and service details to estimate their churn risk.</p>
+        <div class="brand-mark" aria-hidden="true">
+          <span></span><span></span><span></span>
+        </div>
+        <div>
+          <h1>Churn prediction</h1>
+        </div>
       </header>
 
-      {% if result %}
-      <section class="result-card {{ 'risk' if result.is_churn else 'safe' }}" aria-live="polite">
-        <h2>{{ result.label }}</h2>
-        <p>Estimated churn probability: <strong>{{ "%.1f"|format(result.probability * 100) }}%</strong></p>
-        <p class="result-note">Decision threshold: {{ "%.2f"|format(result.threshold) }}. This is a model estimate, not a guarantee.</p>
-      </section>
-      {% endif %}
+      <div class="dashboard">
+        <section class="form-card">
+          <form action="{{ url_for('predict') }}" method="post">
+            {% if form_error %}
+            <div class="form-alert" role="alert">{{ form_error }}</div>
+            {% endif %}
 
-      <section class="form-card">
-        <div class="section-heading">
-          <h2>Account details</h2>
-        </div>
+            {% set groups = [
+              {"title": "Customer details", "fields": ["gender", "SeniorCitizen", "Partner", "Dependents"]},
+              {"title": "Tenure", "fields": ["tenure"]},
+              {"title": "Phone & internet services", "fields": ["PhoneService", "MultipleLines", "InternetService", "OnlineSecurity", "OnlineBackup", "DeviceProtection", "TechSupport", "StreamingTV", "StreamingMovies"]},
+              {"title": "Contract", "fields": ["Contract", "PaperlessBilling"]},
+              {"title": "Billing & payment", "fields": ["PaymentMethod", "MonthlyCharges", "TotalCharges"]}
+            ] %}
 
-        {% if form_error %}
-        <div class="form-alert" role="alert">{{ form_error }}</div>
-        {% endif %}
-
-        <form action="{{ url_for('predict') }}" method="post">
-          <div class="field-grid">
-            {% for field in fields %}
-            <div class="field {{ 'has-error' if field.name in errors else '' }}">
-              <label for="{{ field.name }}">
-                {{ field.label }} <span class="required-indicator" aria-hidden="true">*</span>
-              </label>
-              {% if field.kind == "select" %}
-              <select id="{{ field.name }}" name="{{ field.name }}" required aria-describedby="{{ field.name }}-error">
-                <option value="" disabled {% if not values.get(field.name) %}selected{% endif %}>Choose an option</option>
-                {% for value, label in field.choices %}
-                <option value="{{ value }}" {% if values.get(field.name) == value %}selected{% endif %}>{{ label }}</option>
+            {% for group in groups %}
+            <section class="form-section">
+              <h2>{{ group.title }}</h2>
+              <div class="field-grid">
+                {% for field in fields if field.name in group.fields %}
+                <div class="field {{ 'has-error' if field.name in errors else '' }}">
+                  <label for="{{ field.name }}">
+                    {{ field.label }} <span class="required-indicator" aria-hidden="true">*</span>
+                  </label>
+                  {% if field.kind == "select" %}
+                  <select id="{{ field.name }}" name="{{ field.name }}" required aria-describedby="{{ field.name }}-error">
+                    <option value="" disabled {% if not values.get(field.name) %}selected{% endif %}>Choose an option</option>
+                    {% for value, label in field.choices %}
+                    <option value="{{ value }}" {% if values.get(field.name) == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                  </select>
+                  {% else %}
+                  <input
+                    id="{{ field.name }}"
+                    name="{{ field.name }}"
+                    type="number"
+                    min="{{ field.minimum }}"
+                    max="{{ field.maximum }}"
+                    step="{{ field.step }}"
+                    value="{{ values.get(field.name, '') }}"
+                    required
+                    aria-describedby="{{ field.name }}-error"
+                  >
+                  {% endif %}
+                  <span class="field-error" id="{{ field.name }}-error">{{ errors.get(field.name, '') }}</span>
+                </div>
                 {% endfor %}
-              </select>
-              {% else %}
-              <input
-                id="{{ field.name }}"
-                name="{{ field.name }}"
-                type="number"
-                min="{{ field.minimum }}"
-                max="{{ field.maximum }}"
-                step="{{ field.step }}"
-                value="{{ values.get(field.name, '') }}"
-                required
-                aria-describedby="{{ field.name }}-error"
-              >
-              {% endif %}
-              <span class="field-error" id="{{ field.name }}-error">{{ errors.get(field.name, '') }}</span>
-            </div>
+              </div>
+            </section>
             {% endfor %}
-          </div>
-          <button type="submit">Estimate churn risk</button>
-        </form>
-      </section>
+
+            <button type="submit">Estimate churn risk <span aria-hidden="true">→</span></button>
+          </form>
+        </section>
+
+        <aside class="sidebar">
+          <section class="result-card {{ 'risk' if result and result.is_churn else 'safe' if result else 'pending' }}" aria-live="polite">
+            <div class="result-icon" aria-hidden="true">{{ "!" if result and result.is_churn else "✓" if result else "i" }}</div>
+            <div>
+              {% if result %}
+              <h2>{{ result.label }}</h2>
+              <p>Estimated churn probability</p>
+              <strong class="probability">{{ "%.1f"|format(result.probability * 100) }}%</strong>
+              {% else %}
+              <h2>Prediction</h2>
+              <p>Complete the form to estimate churn risk.</p>
+              {% endif %}
+            </div>
+          </section>
+
+          <section class="summary-card">
+            <h2>Customer summary</h2>
+            <dl>
+              {% for field in fields %}
+              <div class="summary-row">
+                <dt>{{ field.label }}</dt>
+                <dd>{{ values.get(field.name) or "—" }}</dd>
+              </div>
+              {% endfor %}
+            </dl>
+          </section>
+
+        </aside>
+      </div>
     </main>
   </body>
 </html>

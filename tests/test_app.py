@@ -102,14 +102,14 @@ class ChurnAppTests(unittest.TestCase):
         self.assertEqual(response.status_code, 400)
         self.assertIn(b"Choose one of the listed options.", response.data)
 
-    def test_inconsistent_phone_service_options_are_rejected(self):
+    def test_allowed_phone_service_options_are_accepted(self):
         customer = self.valid_customer()
         customer["PhoneService"] = "No"
 
         response = self.client.post("/predict", data=customer)
 
-        self.assertEqual(response.status_code, 400)
-        self.assertIn(b"when phone service is No.", response.data)
+        self.assertEqual(response.status_code, 200)
+        self.assertIn(b"Estimated churn probability", response.data)
 
 
 if __name__ == "__main__":

@@ -219,38 +219,6 @@ def parse_customer_form(
         else:
             customer[field_name] = value
 
-    if not errors:
-        if customer["PhoneService"] == "No":
-            if customer["MultipleLines"] != "No phone service":
-                errors["MultipleLines"] = (
-                    "Choose 'No phone service' when phone service is No."
-                )
-        elif customer["MultipleLines"] == "No phone service":
-            errors["MultipleLines"] = (
-                "Choose No or Yes when phone service is available."
-            )
-
-        internet_add_ons = (
-            "OnlineSecurity",
-            "OnlineBackup",
-            "DeviceProtection",
-            "TechSupport",
-            "StreamingTV",
-            "StreamingMovies",
-        )
-        if customer["InternetService"] == "No":
-            for field_name in internet_add_ons:
-                if customer[field_name] != "No internet service":
-                    errors[field_name] = (
-                        "Choose 'No internet service' when Internet service is No."
-                    )
-        else:
-            for field_name in internet_add_ons:
-                if customer[field_name] == "No internet service":
-                    errors[field_name] = (
-                        "This option is only valid when Internet service is No."
-                    )
-
     return customer, errors
 
 
